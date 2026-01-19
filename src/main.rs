@@ -21,12 +21,11 @@ fn main() {
 
 
     let arr = iter::once(None)
-    .chain(iter::repeat(Some(Cell::new(2))).take(13))
+    .chain(iter::repeat(Some(Cell::new(2))).take(300))
     // .chain(iter::once(None))
     .collect::<Vec<Option<Cell<i32>>>>();
 
-    for _ in 0..4 {
-        println!("{:?}", arr);
+    for _ in 0..6 {
 
         arr.iter().for_each(|x| {
             match x.as_ref() {
@@ -51,14 +50,16 @@ fn main() {
             };
 
 
-            let resto = curr_cell.get() % den(i as i32);
-            let div = curr_cell.get() / den(i as i32);
-            curr_cell.set(resto);
 
             if let Some(next) = next {
+                let resto = curr_cell.get() % den(i as i32);
+                let div = curr_cell.get() / den(i as i32);
+                curr_cell.set(resto);
+
                 next.set(next.get() + num(i as i32) * div);
             } else {
-                println!("{:?}", div / 10);
+                println!("{:?}", curr_cell.get() / 10);
+                curr_cell.set(curr_cell.get() % 10);
             }
 
         }
