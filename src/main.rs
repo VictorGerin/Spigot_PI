@@ -86,7 +86,7 @@ fn main() {
 
 
     //Loop para cada digito de PI
-    let pi_digits = (0..n).map(|_| {
+    let mut pi_digits = (0..n).map(|_| {
         
         let mut digit = -1;
 
@@ -138,28 +138,23 @@ fn main() {
             }
         });
 
-        Cell::new(digit as u8)
+        digit as u8
     })
-    .collect::<Vec<Cell<u8>>>();
+    .collect::<Vec<u8>>();
 
 
     //Em alguns casos é possivel obter um digito de PI >= 10 e isso quer dizer que
     //na verdade o valor do digito é o resto da divisão por 10 e o anterior deve receber o carry
     //A propagação é feita em uma única passagem da direita para a esquerda
-    for window in pi_digits.windows(2).rev() {
-        let curr_cell = &window[1];
-        let next = &window[0];
-
-        let curr_value = curr_cell.get();
+    for i in (1..pi_digits.len()).rev() {
+        let curr_value = pi_digits[i];
         if curr_value >= 10 {
             let carry = curr_value / 10;
             let remainder = curr_value % 10;
-            curr_cell.set(remainder);
-            next.set(next.get() + carry);
+            pi_digits[i] = remainder;
+            pi_digits[i - 1] += carry;
         }
     }
-
-    let pi_digits = pi_digits.iter().map(Cell::get).collect::<Vec<u8>>();
 
     println!("{:?}", pi_digits);
 
