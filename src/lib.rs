@@ -1,7 +1,7 @@
 pub mod balanced_chunks_mut;
 pub mod pi_digits_iter;
 
-use std::{cell::Cell, iter, sync::mpsc::{channel, sync_channel}, thread};
+use std::{cell::Cell, iter, sync::mpsc::{channel, sync_channel, Receiver}, thread};
 use balanced_chunks_mut::BalancedChunksMut;
 use pi_digits_iter::PiDigitsIter;
 
@@ -106,9 +106,6 @@ pub fn calculate_pi_parallel(n_digits: usize, num_threads: usize, channel_bound:
     // Cria um canal síncrono para disparar o processamento de cada dígito
     let (trigger_tx, trigger_rx) = sync_channel::<i32>(channel_bound);
 
-    // Cria um canal para enviar os dados brutos (i32) para a thread principal
-    let (raw_tx, raw_rx) = sync_channel::<i32>(channel_bound);
-
     // Thread que dispara o processamento de cada dígito
     thread::spawn(move || {
         for _ in 0..n_digits {
@@ -117,6 +114,9 @@ pub fn calculate_pi_parallel(n_digits: usize, num_threads: usize, channel_bound:
             }
         }
     });
+
+    // Canal para receber o último rx da última thread criada
+    let (last_rx_tx, last_rx_rx) = channel::<Receiver<i32>>();
 
     // Thread que processa os dados e envia os dados brutos para o canal
     thread::spawn(move || {
@@ -182,13 +182,14 @@ pub fn calculate_pi_parallel(n_digits: usize, num_threads: usize, channel_bound:
                 });
             }
 
-            // Envia os dados brutos para o canal usando try_for_each
-            let _ = input_source.into_iter().try_for_each(|digit_raw| {
-                raw_tx.send(digit_raw)
-            });
+            // Envia o último rx (input_source) através do canal
+            let _ = last_rx_tx.send(input_source);
         });
     });
 
-    // Cria o PiDigitsIter na thread principal com os dados brutos do canal
-    PiDigitsIter::new(raw_rx.into_iter())
+    // Recebe o último rx da thread
+    let final_rx = last_rx_rx.recv().unwrap();
+    
+    // Cria o PiDigitsIter na thread principal usando o último rx recebido
+    PiDigitsIter::new(final_rx.into_iter())
 }
