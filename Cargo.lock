@@ -3,5 +3,5 @@
 version = 4
 
 [[package]]
-name = "Spigot_PI"
+name = "spigot_pi"
 version = "0.1.0"
