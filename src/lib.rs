@@ -193,3 +193,6 @@ pub fn calculate_pi_parallel(n_digits: usize, num_threads: usize, channel_bound:
     // Cria o PiDigitsIter na thread principal usando o último rx recebido
     PiDigitsIter::new(final_rx.into_iter())
 }
+
+#[cfg(test)]
+mod tests;

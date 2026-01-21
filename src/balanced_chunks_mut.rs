@@ -1,4 +1,27 @@
-
+/// Um iterador que divide um slice mutável em chunks balanceados.
+///
+/// Este iterador é similar ao `chunks_mut()` padrão do Rust, mas com uma diferença importante:
+/// ao invés de colocar todo o resto da divisão no último chunk (deixando-o significativamente
+/// maior que os outros), o `BalancedChunksMut` distribui o resto uniformemente entre os primeiros
+/// chunks, garantindo que todos os chunks tenham tamanhos muito próximos (diferindo no máximo
+/// por 1 elemento).
+///
+/// # Exemplo
+///
+/// Para um slice de 10 elementos dividido em 3 chunks:
+/// - `chunks_mut(3)`: `[4, 4, 2]` - o último chunk fica muito menor
+/// - `BalancedChunksMut::new(3)`: `[4, 3, 3]` - todos os chunks têm tamanhos próximos
+///
+/// Para um slice de 10 elementos dividido em 4 chunks:
+/// - `chunks_mut(4)`: `[3, 3, 3, 1]` - o último chunk fica muito menor
+/// - `BalancedChunksMut::new(4)`: `[3, 3, 2, 2]` - os chunks têm tamanhos balanceados
+///
+/// # Algoritmo
+///
+/// O algoritmo calcula `base_size = len / num_chunks` e `remainder = len % num_chunks`.
+/// Os primeiros `remainder` chunks recebem `base_size + 1` elementos, enquanto os demais
+/// recebem `base_size` elementos. Isso garante que a diferença máxima entre qualquer
+/// dois chunks seja de apenas 1 elemento.
 pub struct BalancedChunksMut<'a, T> {
     remaining: Option<&'a mut [T]>,
     chunks_left: usize,
@@ -7,6 +30,17 @@ pub struct BalancedChunksMut<'a, T> {
 }
 
 impl<'a, T> BalancedChunksMut<'a, T> {
+    /// Cria um novo iterador que divide o slice em `num_chunks` chunks balanceados.
+    ///
+    /// # Parâmetros
+    /// - `slice`: O slice mutável a ser dividido
+    /// - `num_chunks`: O número de chunks desejados
+    ///
+    /// # Retorna
+    /// Um iterador que produz `num_chunks` slices mutáveis com tamanhos balanceados.
+    ///
+    /// # Panics
+    /// Não causa panic, mas retorna um iterador vazio se `num_chunks == 0`.
     pub fn new(slice: &'a mut[T], num_chunks:usize) -> Self {
         if num_chunks == 0 {
             Self { remaining: None, chunks_left: 0, base_size: 0, remainder: 0 }
@@ -55,8 +89,10 @@ impl<'a, T> Iterator for BalancedChunksMut<'a, T> {
     }
     
 }
-// 2. DoubleEndedIterator: Permite andar para trás (.rev)
-// Necessário para fazer o loop reverso na main
+/// Implementação de `DoubleEndedIterator` que permite iterar em ordem reversa.
+///
+/// Isso é necessário para processar os chunks de trás para frente, o que é útil
+/// no algoritmo Spigot onde o processamento precisa começar do final do array.
 impl<'a, T> DoubleEndedIterator for BalancedChunksMut<'a, T> {
     fn next_back(&mut self) -> Option<Self::Item> {
         if self.chunks_left == 0 { return None; }
@@ -88,8 +124,10 @@ impl<'a, T> DoubleEndedIterator for BalancedChunksMut<'a, T> {
     }
 }
 
-// 3. ExactSizeIterator: O iterador sabe seu tamanho exato
-// Necessário para o .enumerate() funcionar junto com .rev()
+/// Implementação de `ExactSizeIterator` que permite saber o número exato de chunks restantes.
+///
+/// Isso é necessário para que `.enumerate()` funcione corretamente quando combinado
+/// com `.rev()`, permitindo obter o índice correto de cada chunk durante a iteração reversa.
 impl<'a, T> ExactSizeIterator for BalancedChunksMut<'a, T> {
     fn len(&self) -> usize {
         self.chunks_left

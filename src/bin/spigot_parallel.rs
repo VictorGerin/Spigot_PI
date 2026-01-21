@@ -2,8 +2,8 @@ use spigot_pi::calculate_pi_parallel;
 
 fn main() {
     let n_digits = 100000;
-    let num_threads = 8;
-    let channel_bound = 8;
+    let num_threads = 12;
+    let channel_bound = 12;
 
     // Calcula os dígitos de PI usando a implementação paralela
     let pi_iterator = calculate_pi_parallel(n_digits, num_threads, channel_bound);
