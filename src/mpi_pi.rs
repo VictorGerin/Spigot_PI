@@ -1,20 +1,32 @@
+// Descrição: Módulo MPI para cálculo distribuído de PI - compilado apenas quando feature "mpi" está habilitada
+// Gerado por: Cursor AI
+// Versão: mpi 0.8.1
+// AI_GENERATED_CODE_START
+#[cfg(feature = "mpi")]
 use mpi::traits::*;
+#[cfg(feature = "mpi")]
 use std::sync::mpsc::{channel, Sender, IntoIter};
+#[cfg(feature = "mpi")]
 use std::thread::{self, JoinHandle};
+#[cfg(feature = "mpi")]
 use crate::pi_digits_iter::PiDigitsIter;
+// AI_GENERATED_CODE_END
 
+#[cfg(feature = "mpi")]
 /// Tags MPI para comunicação entre ranks
 #[derive(Debug, Clone, Copy)]
 enum MpiTag {
     Carry = 0,
 }
 
+#[cfg(feature = "mpi")]
 impl MpiTag {
     fn as_i32(self) -> i32 {
         self as i32
     }
 }
 
+#[cfg(feature = "mpi")]
 /// Struct Wrapper (Guard) para garantir que a thread MPI finalize corretamente.
 ///
 /// CORREÇÃO:
@@ -25,6 +37,7 @@ pub struct MpiGuardIter {
     thread_handle: Option<JoinHandle<()>>,
 }
 
+#[cfg(feature = "mpi")]
 impl Iterator for MpiGuardIter {
     type Item = u8;
 
@@ -33,6 +46,7 @@ impl Iterator for MpiGuardIter {
     }
 }
 
+#[cfg(feature = "mpi")]
 impl Drop for MpiGuardIter {
     fn drop(&mut self) {
         // Ao destruir o iterador, esperamos a thread do MPI terminar o cleanup.
@@ -44,6 +58,7 @@ impl Drop for MpiGuardIter {
     }
 }
 
+#[cfg(feature = "mpi")]
 /// Calcula o denominador para o índice i no algoritmo Spigot
 #[inline]
 fn den(i: i32) -> i32 {
@@ -53,6 +68,7 @@ fn den(i: i32) -> i32 {
     }
 }
 
+#[cfg(feature = "mpi")]
 /// Função auxiliar para rank 0: coordena o processamento e envia para o channel
 /// Recebe o Sender (tx) criado na thread principal para enviar os dados de volta.
 fn rank0_coordinator<C: Communicator>(
@@ -65,7 +81,7 @@ fn rank0_coordinator<C: Communicator>(
         let last_rank = size - 1;
         // 1. Pipeline Fill: Enviar TODOS os triggers de uma vez
         for _digit_idx in 0..n_digits {
-            world.process_at_rank(last_rank).send_with_tag(&0i32, MpiTag::Carry.as_i32());
+            world.process_at_rank(last_rank).send_with_tag(&0i32, 0);
         }
         
         // 2. Finalização: Enviar flag (-1) para o último rank
@@ -92,6 +108,7 @@ fn rank0_coordinator<C: Communicator>(
     // tx é dropado aqui, o que fecha o channel e sinaliza o fim para o iterador na main
 }
 
+#[cfg(feature = "mpi")]
 /// Função auxiliar para ranks 1..N: processam chunks em pipeline
 fn rank_worker<C: Communicator>(world: &C, rank: i32, size: i32, n_digits: usize) {
     let size_usize = size as usize;
@@ -158,6 +175,7 @@ fn rank_worker<C: Communicator>(world: &C, rank: i32, size: i32, n_digits: usize
     }
 }
 
+#[cfg(feature = "mpi")]
 /// Função Principal
 pub fn calculate_pi_mpi(n_digits: usize) -> Option<impl Iterator<Item = u8>> {
     let (data_tx, data_rx) = channel::<i32>();

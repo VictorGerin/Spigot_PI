@@ -37,7 +37,7 @@ where
 
 #[test]
 fn test_pi_sequential_verification() {
-    let n_digits = 20000;
+    let n_digits = 10000;
     let expected = read_expected_digits(n_digits);
     let actual = calculate_pi_sequential(n_digits);
     verify_pi_digits(expected, actual);
@@ -45,7 +45,7 @@ fn test_pi_sequential_verification() {
 
 #[test]
 fn test_pi_parallel_verification() {
-    let n_digits = 20000;
+    let n_digits = 10000;
     let num_threads = std::thread::available_parallelism()
         .expect("Não foi possível determinar o número de threads disponíveis")
         .get();

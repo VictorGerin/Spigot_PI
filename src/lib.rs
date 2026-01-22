@@ -1,5 +1,7 @@
 pub mod balanced_chunks_mut;
 pub mod pi_digits_iter;
+
+#[cfg(feature = "mpi")]
 pub mod mpi_pi;
 
 use std::{cell::Cell, iter, sync::mpsc::{channel, sync_channel, Receiver}, thread};
@@ -195,7 +197,8 @@ pub fn calculate_pi_parallel(n_digits: usize, num_threads: usize, channel_bound:
     PiDigitsIter::new(final_rx.into_iter())
 }
 
-// Re-exportar função MPI para uso externo
+// Re-exportar função MPI para uso externo (apenas quando a feature mpi estiver habilitada)
+#[cfg(feature = "mpi")]
 pub use mpi_pi::calculate_pi_mpi;
 
 #[cfg(test)]

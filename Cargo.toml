@@ -3,6 +3,9 @@ name = "spigot_pi"
 version = "0.1.0"
 edition = "2024"
 
+[features]
+default = []
+mpi = ["dep:mpi"]
 
 [dependencies]
-mpi = { version = "0.8.1", features = ["user-operations", "derive"] }
+mpi = { version = "0.8.1", features = ["user-operations", "derive"], optional = true }
