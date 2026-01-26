@@ -7,7 +7,7 @@ use spigot_pi::calculate_pi_mpi;
 
 #[cfg(feature = "mpi")]
 fn main() {
-    let n_digits = 1000000;
+    let n_digits = 100;
 
     // Calcula os dígitos de PI usando a implementação MPI distribuída
     // Nota: Esta função deve ser executada com mpirun/mpiexec

@@ -1,0 +1,42 @@
+apiVersion: kubeflow.org/v2beta1
+kind: MPIJob
+metadata:
+  name: spigot-pi-job
+spec:
+  slotsPerWorker: 1
+  runPolicy:
+    cleanPodPolicy: Running
+  mpiReplicaSpecs:
+    Launcher:
+      replicas: 1
+      template:
+        spec:
+          containers:
+          - image: spigot-mpi:latest
+            name: mpi-launcher
+            imagePullPolicy: IfNotPresent
+            command:
+            - mpirun
+            - --allow-run-as-root
+            - -np
+            - "3"
+            - -mca
+            - plm_rsh_args
+            - "-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null"
+            - /app/spigot_mpi
+            resources:
+              limits:
+                cpu: 1
+                memory: 512Mi
+    Worker:
+      replicas: 3
+      template:
+        spec:
+          containers:
+          - image: spigot-mpi:latest
+            name: mpi-worker
+            imagePullPolicy: IfNotPresent
+            resources:
+              limits:
+                cpu: 1
+                memory: 512Mi
